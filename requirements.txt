@@ -1,1 +1,8 @@
- 
+Flask
+mysql-connector-python
+Werkzeug
+Flask-Session
+python-dotenv
+cryptography
+Flask-MySQLdb
+PyMySQL
