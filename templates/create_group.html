@@ -1,0 +1,40 @@
+<!DOCTYPE html>  
+<html lang="en">  
+<head>  
+    <meta charset="UTF-8">  
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">  
+    <title>Create Group</title>  
+    <link rel="stylesheet" href="create_group.css">  
+</head>  
+<body>  
+
+<div class="container">  
+    <h1>Create a Group</h1>  
+    
+    <label for="batchSelect">Select Batch:</label>  
+    <select id="batchSelect" onchange="updateTeamLeaderOptions(); updateTeamMembersOptions();">  
+        <option value="">--Select Batch--</option>  
+        <option value="21">Batch 21</option>  
+        <option value="22">Batch 22</option>  
+        <option value="23">Batch 23</option>  
+        <option value="24">Batch 24</option>  
+    </select>  
+
+    <label for="teamLeaderSelect">Select Team Leader:</label>  
+    <select id="teamLeaderSelect" onchange="clearTeamMembers()">  
+        <option value="">--Select Team Leader--</option>  
+    </select>  
+
+    <label for="memberSearch">Search Team Members:</label>  
+    <input type="text" id="memberSearch" oninput="filterMembers()">  
+    <div id="memberList" class="member-list"></div>  
+
+    <button onclick="submitGroup()">Create Group</button>  
+
+    <p id="groupMessage"></p>  
+    <button onclick="openViewGroupsPage()">View Current Groups</button>  
+</div>  
+
+<script src="create_group_script.js"></script>  
+</body>  
+</html>

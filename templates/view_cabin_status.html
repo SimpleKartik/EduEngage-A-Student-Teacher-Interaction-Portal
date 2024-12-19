@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Faculty Cabin Status</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='stylesDashboard.css') }}">
+    <style>
+        .status-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        
+        .status-table th, .status-table td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: center;
+        }
+        
+        .status-table th {
+            background-color: #262626;
+            color: cyan;
+        }
+        
+        .Available { background-color: #90EE90; color: black; }
+        .Busy { background-color: #FFB6C1; color: black; }
+        .Not-Available { background-color: #D3D3D3; color: black; }
+        
+        .faculty-info {
+            background-color: #262626;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .faculty-name {
+            color: cyan;
+            font-size: 1.5em;
+            margin-bottom: 10px;
+        }
+        
+        .back-button {
+            background-color: #333;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="faculty-info">
+            <div class="faculty-name">{{ faculty_name }}</div>
+            <div>Department: {{ department }}</div>
+        </div>
+        
+        <table class="status-table">
+            <thead>
+                <tr>
+                    <th>Day</th>
+                    <th>8:30 AM</th>
+                    <th>10:05 AM</th>
+                    <th>11:40 AM</th>
+                    <th>1:15 PM</th>
+                    <th>2:50 PM</th>
+                    <th>4:25 PM</th>
+                    <th>6:00 PM</th>
+                </tr>
+            </thead>
+            <tbody id="statusTableBody">
+                <!-- Will be populated by JavaScript -->
+            </tbody>
+        </table>
+        
+        <button onclick="window.location.href='{{ url_for('search_faculty_page') }}'" class="back-button">
+            Back to Search
+        </button>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const teacherId = urlParams.get('id');
+            
+            fetch(`/api/faculty/cabin-status/${teacherId}`)
+                .then(response => response.json())
+                .then(data => {
+                    updateStatusTable(data);
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error loading cabin status');
+                });
+        });
+
+        function updateStatusTable(statusData) {
+            const tableBody = document.getElementById('statusTableBody');
+            const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
+            
+            days.forEach(day => {
+                const row = document.createElement('tr');
+                row.innerHTML = `<td>${day}</td>`;
+                
+                const dayStatus = statusData.filter(s => s.day === day);
+                
+                ['8:30 AM', '10:05 AM', '11:40 AM', '1:15 PM', '2:50 PM', '4:25 PM', '6:00 PM'].forEach(timeSlot => {
+                    const status = dayStatus.find(s => s.time_slot === timeSlot);
+                    const currentStatus = status ? status.status : 'Not-Available';
+                    row.innerHTML += `<td class="${currentStatus}">${currentStatus}</td>`;
+                });
+                
+                tableBody.appendChild(row);
+            });
+        }
+    </script>
+</body>
+</html> 

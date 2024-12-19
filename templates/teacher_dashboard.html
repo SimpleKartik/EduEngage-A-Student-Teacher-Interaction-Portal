@@ -1,0 +1,79 @@
+<!DOCTYPE html>  
+<html lang="en">  
+<head>  
+    <meta charset="UTF-8">  
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">  
+    <title>Teacher Dashboard - VIT Bhopal University</title>  
+    <link rel="stylesheet" href="{{ url_for('static', filename='stylesDashboard.css') }}">
+    <style>
+        .dashboard-options {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+        
+        .option {
+            background-color: #262626;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            width: 300px;
+            box-shadow: 0 0 10px rgba(0, 255, 255, 0.2);
+        }
+        
+        .option-icon {
+            width: 64px;
+            height: 64px;
+            margin-bottom: 15px;
+        }
+        
+        .option h2 {
+            color: cyan;
+            margin-bottom: 10px;
+        }
+        
+        .option-button {
+            display: inline-block;
+            background-color: cyan;
+            color: black;
+            padding: 10px 20px;
+            border-radius: 5px;
+            text-decoration: none;
+            margin-top: 15px;
+            transition: transform 0.2s;
+        }
+        
+        .option-button:hover {
+            transform: scale(1.05);
+        }
+    </style>
+</head>  
+<body>  
+    <div class="container">  
+        <h1>Welcome to the Teacher Dashboard</h1>  
+        <div class="dashboard-options">  
+            <div class="option">  
+                <img src="{{ url_for('static', filename='cabin.png') }}" alt="Cabin Status Icon" class="option-icon">  
+                <h2>Cabin Status</h2>  
+                <p>Update your availability status.</p>  
+                <a href="{{ url_for('update_cabin_status') }}" class="option-button">Update Status</a>  
+            </div>  
+            <div class="option">  
+                <img src="{{ url_for('static', filename='project-icon.png') }}" alt="Project Management Icon" class="option-icon">  
+                <h2>Project Management</h2>  
+                <p>Manage student projects and teams.</p>  
+                <a href="{{ url_for('teacher_projects') }}" class="option-button">Manage Projects</a>  
+            </div>  
+            <div class="option">  
+                <img src="{{ url_for('static', filename='groups-icon.png') }}" alt="Group Selection Icon" class="option-icon">  
+                <h2>Project Groups</h2>  
+                <p>Select and manage project groups.</p>  
+                <a href="{{ url_for('teacher_group_selection') }}" class="option-button">Manage Groups</a>  
+            </div>  
+        </div>  
+        <button onclick="window.location.href='{{ url_for('logout') }}'" class="logout-button">Logout</button>
+    </div>  
+</body>  
+</html>

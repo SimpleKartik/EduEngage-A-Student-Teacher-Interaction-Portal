@@ -1,0 +1,330 @@
+<!DOCTYPE html>  
+<html lang="en">  
+<head>  
+    <meta charset="UTF-8">  
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">  
+    <title>Search Faculty - VIT Bhopal University</title>  
+    <link rel="stylesheet" href="{{ url_for('static', filename='stylesDashboard.css') }}">
+    <style>
+        .search-container {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background-color: #1a1a1a;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border: 1px solid cyan;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 12px 20px;
+            margin: 8px 0;
+            display: inline-block;
+            border: 2px solid cyan;
+            border-radius: 5px;
+            box-sizing: border-box;
+            background-color: #333;
+            color: white;
+            font-size: 16px;
+        }
+
+        .search-input::placeholder {
+            color: #888;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #00ffff;
+            box-shadow: 0 0 5px rgba(0, 255, 255, 0.5);
+        }
+
+        .faculty-card {
+            background-color: #262626;
+            border: 1px solid cyan;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 15px 0;
+            transition: transform 0.2s;
+        }
+
+        .faculty-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 255, 255, 0.2);
+        }
+
+        .faculty-name {
+            color: cyan;
+            font-size: 1.2em;
+            margin-bottom: 10px;
+        }
+
+        .faculty-info {
+            display: grid;
+            grid-template-columns: auto 1fr;
+            gap: 10px;
+            margin: 10px 0;
+        }
+
+        .info-label {
+            color: #888;
+            font-weight: bold;
+            min-width: 100px;
+        }
+
+        .cabin-number {
+            color: #FFA500;
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+
+        .availability-status {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 0.9em;
+            margin-left: 10px;
+        }
+
+        .status-Available { background-color: #90EE90; color: black; }
+        .status-Busy { background-color: #FFB6C1; color: black; }
+        .status-Not-Available { background-color: #D3D3D3; color: black; }
+
+        .search-results {
+            margin-top: 20px;
+            padding-bottom: 60px; /* Space for back button */
+        }
+
+        .back-button {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 100;
+        }
+
+        .no-results {
+            text-align: center;
+            color: #888;
+            padding: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .faculty-info {
+                grid-template-columns: 1fr;
+            }
+            
+            .search-container {
+                margin: 10px 0;
+                padding: 15px;
+            }
+        }
+
+        .status-table {
+            width: 100%;
+            margin-top: 10px;
+            border-collapse: collapse;
+            background-color: #333;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        .status-table th, .status-table td {
+            padding: 8px;
+            text-align: center;
+            border: 1px solid #444;
+        }
+
+        .status-table th {
+            background-color: #1a1a1a;
+            color: cyan;
+            font-size: 0.9em;
+        }
+
+        .status-cell {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.8em;
+            display: inline-block;
+            min-width: 80px;
+        }
+
+        .status-Available {
+            background-color: #90EE90;
+            color: black;
+        }
+
+        .status-Busy {
+            background-color: #FFB6C1;
+            color: black;
+        }
+
+        .status-Not-Available {
+            background-color: #D3D3D3;
+            color: black;
+        }
+
+        .toggle-schedule {
+            background-color: transparent;
+            border: 1px solid cyan;
+            color: cyan;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .toggle-schedule:hover {
+            background-color: cyan;
+            color: black;
+        }
+
+        .schedule-container {
+            display: none;
+            margin-top: 10px;
+        }
+
+        .schedule-visible {
+            display: block;
+        }
+    </style>
+</head>  
+<body>  
+    <div class="container">  
+        <h1>Search Faculty</h1>  
+        
+        <div class="search-container">
+            <input type="text" 
+                   id="searchInput" 
+                   class="search-input" 
+                   placeholder="Search by name, department, or cabin number..."
+                   onkeyup="searchFaculty()"
+                   autofocus>
+        </div>
+
+        <div id="facultyList" class="search-results">
+            <!-- Faculty cards will be loaded here -->
+        </div>
+
+        <button onclick="window.location.href='{{ url_for('student_dashboard') }}'" class="back-button">
+            Back to Dashboard
+        </button>
+    </div>  
+    <script>
+        let allFacultyData = [];
+
+        document.addEventListener('DOMContentLoaded', loadFaculty);
+
+        function loadFaculty() {
+            fetch('/api/faculty/schedule')  // Updated endpoint
+                .then(response => response.json())
+                .then(faculty => {
+                    allFacultyData = faculty;
+                    displayFaculty(faculty);
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    document.getElementById('facultyList').innerHTML = 
+                        '<p style="color: #ff6b6b;">Error loading faculty data. Please try again later.</p>';
+                });
+        }
+
+        function displayFaculty(faculty) {
+            const container = document.getElementById('facultyList');
+            
+            if (!faculty || faculty.length === 0) {
+                container.innerHTML = '<p class="no-results">No faculty members found matching your search.</p>';
+                return;
+            }
+
+            container.innerHTML = faculty.map((teacher, index) => `
+                <div class="faculty-card">
+                    <div class="faculty-name">${teacher.name}</div>
+                    <div class="faculty-info">
+                        <span class="info-label">Department:</span>
+                        <span>${teacher.department}</span>
+                        
+                        <span class="info-label">Cabin:</span>
+                        <span class="cabin-number">${teacher.cabin_number}</span>
+                        
+                        <span class="info-label">Email:</span>
+                        <span>${teacher.email}</span>
+                    </div>
+                    
+                    <button onclick="toggleSchedule(${index})" class="toggle-schedule">
+                        View Cabin Schedule
+                    </button>
+                    
+                    <div id="schedule-${index}" class="schedule-container">
+                        <table class="status-table">
+                            <thead>
+                                <tr>
+                                    <th>Time</th>
+                                    <th>Monday</th>
+                                    <th>Tuesday</th>
+                                    <th>Wednesday</th>
+                                    <th>Thursday</th>
+                                    <th>Friday</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${generateScheduleRows(teacher.schedule)}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function generateScheduleRows(schedule) {
+            const timeSlots = [
+                '8:30 AM', '10:05 AM', '11:40 AM',
+                '1:15 PM', '2:50 PM', '4:25 PM', '6:00 PM'
+            ];
+            
+            return timeSlots.map(time => `
+                <tr>
+                    <th>${time}</th>
+                    ${['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'].map(day => `
+                        <td>
+                            <span class="status-cell status-${schedule[day][time]}">
+                                ${schedule[day][time]}
+                            </span>
+                        </td>
+                    `).join('')}
+                </tr>
+            `).join('');
+        }
+
+        function toggleSchedule(index) {
+            const scheduleDiv = document.getElementById(`schedule-${index}`);
+            scheduleDiv.classList.toggle('schedule-visible');
+            
+            const button = scheduleDiv.previousElementSibling;
+            button.textContent = scheduleDiv.classList.contains('schedule-visible') 
+                ? 'Hide Cabin Schedule' 
+                : 'View Cabin Schedule';
+        }
+
+        function searchFaculty() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase().trim();
+            
+            if (searchTerm === '') {
+                displayFaculty(allFacultyData);
+                return;
+            }
+            
+            const filteredFaculty = allFacultyData.filter(teacher => 
+                teacher.name.toLowerCase().includes(searchTerm) || 
+                teacher.department.toLowerCase().includes(searchTerm) ||
+                teacher.cabin_number.toLowerCase().includes(searchTerm)
+            );
+            
+            displayFaculty(filteredFaculty);
+        }
+    </script>
+</body>  
+</html>

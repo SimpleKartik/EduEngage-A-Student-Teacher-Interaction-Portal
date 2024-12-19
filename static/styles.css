@@ -1,0 +1,127 @@
+* {  
+    box-sizing: border-box;  
+    margin: 0;  
+    padding: 0;  
+}  
+
+body {  
+    font-family: 'Arial', sans-serif;  
+    background-color: #1a1a1a;  
+    color: white;  
+    display: flex;  
+    justify-content: center;  
+    align-items: center;  
+    height: 100vh;  
+}  
+
+.container {  
+    text-align: center;  
+    padding: 20px;  
+    border-radius: 15px;  
+    background-color: #262626;  
+    box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);  
+    width: 300px; /* Fixed width for consistency */  
+}  
+
+.logo {  
+    width: 150px;  
+    margin-bottom: 20px;  
+}  
+
+h1 {  
+    margin-bottom: 20px;  
+    color: cyan;  
+}  
+
+.role-selection {  
+    display: flex;  
+    justify-content: center;  
+    gap: 20px;  
+}  
+
+button {  
+    padding: 15px 30px;  
+    font-size: 18px;  
+    border: none;  
+    border-radius: 5px;  
+    cursor: pointer;  
+    background-color: cyan;  
+    color: black;  
+    transition: background-color 0.3s, transform 0.2s, box-shadow 0.2s;  
+}  
+
+button:hover {  
+    background-color: #00bcd4;  
+    transform: scale(1.1);  
+    box-shadow: 0 0 10px rgba(0, 255, 255, 0.8);  
+}  
+
+button:focus {  
+    outline: none;  
+}  
+
+form {  
+    display: flex;  
+    flex-direction: column;  
+    gap: 15px; /* Space between inputs */  
+}  
+
+input {  
+    padding: 10px;  
+    border: none;  
+    border-radius: 5px;  
+    background-color: #3a3a3a;  
+    color: white;  
+    font-size: 16px;  
+}  
+
+input::placeholder {  
+    color: #a3a3a3; /* Placeholder color */  
+}  
+
+input:focus {  
+    outline: none;  
+    border: 2px solid cyan;  
+}
+.project-options {  
+    display: flex;                       /* Use flexbox for layout */  
+    justify-content: center;             /* Center the options */  
+    gap: 50px;                          /* Space between project options */  
+    margin-top: 30px;                   /* Space above options */  
+}  
+
+.project-option {  
+    background-color: #1E1E1E;          /* Background for each project option */  
+    border: 1px solid #00FFCC;          /* Border color */  
+    border-radius: 10px;                /* Rounded corners */  
+    padding: 20px;                      /* Inner space */  
+    width: 300px;                       /* Set a fixed width */  
+    text-align: center;                 /* Center text */  
+    transition: transform 0.2s;        /* Smooth scaling on hover */  
+}  
+
+.project-option:hover {  
+    transform: scale(1.05);             /* Scale up on hover */  
+}  
+
+.project-icon {  
+    width: 50px;                        /* Icon size */  
+    height: auto;                       /* Maintain aspect ratio */  
+    margin-bottom: 15px;                /* Space below icon */  
+}  
+
+.option-button {  
+    display: inline-block;               /* Display as inline-block */  
+    background-color: #00FFCC;          /* Button background */  
+    color: black;                        /* Button text color */  
+    padding: 10px 20px;                 /* Padding for button */  
+    border-radius: 5px;                 /* Rounded corners */  
+    text-decoration: none;               /* Remove underline */  
+    font-size: 1em;                      /* Button text size */  
+    margin-top: 10px;                   /* Margin above button */  
+    transition: background-color 0.3s;  /* Smooth button color change */  
+}  
+
+.option-button:hover {  
+    background-color: #FF00FF;          /* Change button color on hover */  
+}

@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Update Cabin Status</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='stylesDashboard.css') }}">
+    <style>
+        .status-cell {
+            padding: 10px;
+        }
+        .status-select {
+            padding: 5px;
+            width: 100%;
+        }
+        .Available { background-color: #90EE90; }
+        .Busy { background-color: #FFB6C1; }
+        .Not-Available { background-color: #D3D3D3; }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: center;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Update Cabin Status</h1>
+        <table id="cabin-status-table">
+            <thead>
+                <tr>
+                    <th>Day</th>
+                    <th>8:30 AM</th>
+                    <th>10:05 AM</th>
+                    <th>11:40 AM</th>
+                    <th>1:15 PM</th>
+                    <th>2:50 PM</th>
+                    <th>4:25 PM</th>
+                    <th>6:00 PM</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Will be populated by JavaScript -->
+            </tbody>
+        </table>
+        <div id="updateMessage" style="margin-top: 20px; color: green;"></div>
+        <button onclick="window.location.href='/teacher_dashboard.html'" style="margin-top: 20px;">Back to Dashboard</button>
+    </div>
+    <script src="{{ url_for('static', filename='cabin_status_script.js') }}"></script>
+</body>
+</html>

@@ -1,0 +1,29 @@
+<!DOCTYPE html>  
+<html lang="en">  
+<head>  
+    <meta charset="UTF-8">  
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">  
+    <title>Project Exhibition</title>  
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">  
+</head>  
+<body>  
+
+<div class="container">  
+    <h1>Project Exhibition</h1>  
+    
+    <button id="createGroupBtn" onclick="openCreateGroupPage()">Create a Group</button>  
+    <button id="viewGroupsBtn" onclick="openViewGroupsPage()">View Current Groups</button>  
+</div>  
+
+<script>  
+function openCreateGroupPage() {  
+    window.open('create_group_capstone.html', '_self'); // Opens the create group page  
+}  
+
+function openViewGroupsPage() {  
+    window.open('view_group.html', '_self'); // Opens the view groups page  
+}  
+</script>  
+
+</body>  
+</html>

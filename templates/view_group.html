@@ -1,0 +1,46 @@
+<!DOCTYPE html>  
+<html lang="en">  
+<head>  
+    <meta charset="UTF-8">  
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">  
+    <title>View Current Groups</title>  
+    <link rel="stylesheet" href="create_group.css">  
+</head>  
+<body>  
+
+<div class="container">  
+    <h1>Current Groups</h1>  
+    <div id="groupList" class="group-list">Loading groups...</div>  
+    <button onclick="openCreateGroupPage()">Create a Group</button>  
+</div>  
+
+<script>  
+function openCreateGroupPage() {  
+    window.open('create_group.html', '_self'); // Opens the create group page  
+}  
+
+function displayGroups() {  
+    const groupListDiv = document.getElementById("groupList");  
+    const groups = JSON.parse(localStorage.getItem('groups')) || [];  
+
+    groupListDiv.innerHTML = ""; // Clear previous groups  
+
+    if (groups.length === 0) {  
+        groupListDiv.innerHTML = "No groups available.";  
+        return;  
+    }  
+
+    groups.forEach((group, index) => {  
+        const groupItem = document.createElement("div");  
+        groupItem.classList.add("group-item");  
+        groupItem.textContent = `Group ${index + 1} - Leader: ${group.leader}, Members: ${group.members.join(", ")}`;  
+        groupListDiv.appendChild(groupItem);  
+    });  
+}  
+
+// Load groups when the page is ready  
+document.addEventListener("DOMContentLoaded", displayGroups);  
+</script>  
+
+</body>  
+</html>

@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Project Groups - VIT Bhopal University</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='stylesDashboard.css') }}">
+    <style>
+        .group-container {
+            background-color: #262626;
+            border: 1px solid cyan;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        .group-type {
+            color: cyan;
+            font-size: 1.2em;
+            text-transform: capitalize;
+            margin-bottom: 15px;
+        }
+
+        .group-status {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 15px;
+            font-size: 0.9em;
+            margin-left: 10px;
+        }
+
+        .status-pending { background-color: #FFB6C1; color: black; }
+        .status-ongoing { background-color: #90EE90; color: black; }
+        .status-completed { background-color: #87CEEB; color: black; }
+
+        .group-details {
+            margin: 15px 0;
+            padding: 15px;
+            background-color: #333;
+            border-radius: 8px;
+        }
+
+        .team-leader {
+            color: cyan;
+            margin-bottom: 10px;
+        }
+
+        .members-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .member-tag {
+            background-color: #444;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 0.9em;
+        }
+
+        .teacher-info {
+            margin-top: 15px;
+            color: #FFA500;
+        }
+
+        .no-groups {
+            text-align: center;
+            padding: 20px;
+            color: #888;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>My Project Groups</h1>
+        <div id="groupsList">
+            <!-- Groups will be loaded here -->
+        </div>
+        <button onclick="window.location.href='{{ url_for('student_dashboard') }}'" class="back-button">
+            Back to Dashboard
+        </button>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', loadGroups);
+
+        function loadGroups() {
+            fetch('/api/student/groups')
+                .then(response => response.json())
+                .then(groups => {
+                    displayGroups(groups);
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    document.getElementById('groupsList').innerHTML = 
+                        '<p class="no-groups">Error loading groups. Please try again later.</p>';
+                });
+        }
+
+        function displayGroups(groups) {
+            const container = document.getElementById('groupsList');
+            
+            if (groups.length === 0) {
+                container.innerHTML = '<p class="no-groups">You are not part of any project groups yet.</p>';
+                return;
+            }
+
+            container.innerHTML = groups.map(group => `
+                <div class="group-container">
+                    <div class="group-type">
+                        ${group.project_type} Project
+                        <span class="group-status status-${group.status}">${group.status}</span>
+                    </div>
+                    
+                    <div class="group-details">
+                        <div class="team-leader">Team Leader: ${group.team_leader_name}</div>
+                        <div>Team Members:</div>
+                        <div class="members-list">
+                            ${group.member_names.split(',').map(member => 
+                                `<span class="member-tag">${member}</span>`
+                            ).join('')}
+                        </div>
+                        ${group.teacher_name ? 
+                            `<div class="teacher-info">Guide: ${group.teacher_name}</div>` : 
+                            '<div class="teacher-info">Waiting for teacher assignment</div>'
+                        }
+                    </div>
+                </div>
+            `).join('');
+        }
+    </script>
+</body>
+</html> 

@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project Management - VIT Bhopal University</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='stylesDashboard.css') }}">
+    <style>
+        .project-container {
+            background-color: #262626;
+            border: 1px solid cyan;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        .project-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .project-type {
+            color: cyan;
+            font-size: 1.2em;
+            text-transform: capitalize;
+        }
+
+        .project-status {
+            padding: 5px 15px;
+            border-radius: 15px;
+            font-size: 0.9em;
+        }
+
+        .status-pending {
+            background-color: #FFB6C1;
+            color: black;
+        }
+
+        .status-ongoing {
+            background-color: #90EE90;
+            color: black;
+        }
+
+        .status-completed {
+            background-color: #87CEEB;
+            color: black;
+        }
+
+        .team-info {
+            margin: 15px 0;
+            padding: 15px;
+            background-color: #333;
+            border-radius: 8px;
+        }
+
+        .team-leader {
+            color: cyan;
+            margin-bottom: 10px;
+        }
+
+        .team-members {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .member-tag {
+            background-color: #444;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 0.9em;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .action-button {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .action-button:hover {
+            transform: scale(1.05);
+        }
+
+        .start-button {
+            background-color: #90EE90;
+            color: black;
+        }
+
+        .complete-button {
+            background-color: #87CEEB;
+            color: black;
+        }
+
+        .project-filters {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .filter-button {
+            background-color: #333;
+            border: 1px solid cyan;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .filter-button.active {
+            background-color: cyan;
+            color: black;
+        }
+
+        .no-projects {
+            text-align: center;
+            padding: 20px;
+            color: #888;
+        }
+
+        .project-count {
+            color: cyan;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Project Management</h1>
+        
+        <div class="project-count">
+            Projects under supervision: <span id="projectCount">0</span>/5
+        </div>
+
+        <div class="project-filters">
+            <button class="filter-button active" onclick="filterProjects('all')">All Projects</button>
+            <button class="filter-button" onclick="filterProjects('pending')">Pending</button>
+            <button class="filter-button" onclick="filterProjects('ongoing')">Ongoing</button>
+            <button class="filter-button" onclick="filterProjects('completed')">Completed</button>
+        </div>
+
+        <div id="projectsList">
+            <!-- Projects will be loaded here -->
+        </div>
+
+        <button onclick="window.location.href='{{ url_for('teacher_dashboard') }}'" class="back-button">
+            Back to Dashboard
+        </button>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', loadProjects);
+
+        function loadProjects() {
+            fetch('/api/current-projects')
+                .then(response => response.json())
+                .then(projects => {
+                    displayProjects(projects);
+                    updateProjectCount(projects.length);
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    document.getElementById('projectsList').innerHTML = 
+                        '<p class="no-projects">Error loading projects. Please try again later.</p>';
+                });
+        }
+
+        function displayProjects(projects) {
+            const container = document.getElementById('projectsList');
+            
+            if (projects.length === 0) {
+                container.innerHTML = '<p class="no-projects">No projects assigned yet.</p>';
+                return;
+            }
+
+            container.innerHTML = projects.map(project => `
+                <div class="project-container" data-status="${project.status}">
+                    <div class="project-header">
+                        <span class="project-type">${project.project_type} Project</span>
+                        <span class="project-status status-${project.status}">${project.status}</span>
+                    </div>
+                    
+                    <div class="team-info">
+                        <div class="team-leader">Team Leader: ${project.team_leader_name}</div>
+                        <div>Team Members:</div>
+                        <div class="team-members">
+                            ${project.member_names.split(',').map(member => 
+                                `<span class="member-tag">${member}</span>`
+                            ).join('')}
+                        </div>
+                    </div>
+                    
+                    <div class="action-buttons">
+                        ${getActionButtons(project)}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function getActionButtons(project) {
+            if (project.status === 'pending') {
+                return `
+                    <button class="action-button start-button" 
+                            onclick="updateStatus(${project.id}, 'ongoing')">
+                        Start Project
+                    </button>
+                `;
+            } else if (project.status === 'ongoing') {
+                return `
+                    <button class="action-button complete-button" 
+                            onclick="updateStatus(${project.id}, 'completed')">
+                        Mark as Completed
+                    </button>
+                `;
+            }
+            return '';
+        }
+
+        function updateStatus(projectId, newStatus) {
+            fetch('/api/update-project-status', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    projectId: projectId,
+                    status: newStatus
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    loadProjects();
+                } else {
+                    alert(data.message || 'Failed to update project status');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error updating project status');
+            });
+        }
+
+        function filterProjects(status) {
+            document.querySelectorAll('.filter-button').forEach(button => {
+                button.classList.remove('active');
+            });
+            event.target.classList.add('active');
+
+            const projects = document.querySelectorAll('.project-container');
+            projects.forEach(project => {
+                if (status === 'all' || project.dataset.status === status) {
+                    project.style.display = 'block';
+                } else {
+                    project.style.display = 'none';
+                }
+            });
+        }
+
+        function updateProjectCount(count) {
+            document.getElementById('projectCount').textContent = count;
+        }
+    </script>
+</body>
+</html> 

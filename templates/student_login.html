@@ -1,0 +1,26 @@
+<!DOCTYPE html>  
+<html lang="en">  
+<head>  
+    <meta charset="UTF-8">  
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">  
+    <title>Student Login - VIT Bhopal University</title>  
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}"> 
+</head>  
+<body>  
+    <div class="container">  
+        <img src="{{ url_for('static', filename='Vit_logo-removebg-preview (1).png') }}" alt="VIT Bhopal University Logo" class="logo">  
+        <h1>Student Login</h1>  
+        <form id="studentLoginForm" onsubmit="return loginStudent(event);">  
+            <div class="input-group">  
+                <input type="text" id="studentUsername" placeholder="Username" required>  
+            </div>  
+            <div class="input-group">  
+                <input type="password" id="studentPassword" placeholder="Password" required>  
+            </div>  
+            <button type="submit" class="role-button student">Login</button>  
+        </form>  
+        <p id="studentMessage" class="error-message"></p>  
+    </div>  
+    <script src="{{ url_for('static', filename='script.js') }}"></script>  
+</body>  
+</html>
