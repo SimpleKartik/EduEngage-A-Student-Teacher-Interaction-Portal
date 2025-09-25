@@ -137,6 +137,21 @@ def init_database():
                 VALUES (?, ?, ?, ?, ?)
             """, students_data)
             
+            # Add sample cabin status data
+            cursor.execute("SELECT id FROM teachers")
+            teacher_ids = [row[0] for row in cursor.fetchall()]
+            
+            days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday']
+            time_slots = ['8:30 AM', '10:05 AM', '11:40 AM', '1:15 PM', '2:50 PM', '4:25 PM', '6:00 PM']
+            
+            for teacher_id in teacher_ids:
+                for day in days:
+                    for time_slot in time_slots:
+                        cursor.execute("""
+                            INSERT INTO cabin_status (teacher_id, day, time_slot, status)
+                            VALUES (?, ?, ?, ?)
+                        """, (teacher_id, day, time_slot, 'Available'))
+            
             print("Sample data added successfully!")
         
         conn.commit()
@@ -1031,22 +1046,26 @@ def get_faculty_schedule():
     cursor = conn.cursor()
     
     try:
-        # First get all teachers
+        # Get all teachers with basic info
         cursor.execute('''
             SELECT 
                 t.id,
                 t.name,
                 t.department,
                 t.email,
-                t.cabin_number
+                COALESCE(t.cabin_number, 'TBD') as cabin_number
             FROM teachers t
             ORDER BY t.name
         ''')
         
         teachers = cursor.fetchall()
         
-        # Then get their schedules
+        # Convert to list of dictionaries
+        faculty_list = []
         for teacher in teachers:
+            teacher_dict = dict(teacher)
+            
+            # Get schedule for this teacher
             cursor.execute('''
                 SELECT 
                     day,
@@ -1063,9 +1082,9 @@ def get_faculty_schedule():
                         WHEN 'Friday' THEN 5
                     END,
                     time_slot
-            ''', (teacher['id'],))
+            ''', (teacher_dict['id'],))
             
-            schedule = cursor.fetchall()
+            schedule_data = cursor.fetchall()
             
             # Organize schedule by day and time
             teacher_schedule = {
@@ -1073,13 +1092,21 @@ def get_faculty_schedule():
                 'Thursday': {}, 'Friday': {}
             }
             
-            for slot in schedule:
+            for slot in schedule_data:
                 teacher_schedule[slot['day']][slot['time_slot']] = slot['status']
             
-            teacher['schedule'] = teacher_schedule
-            del teacher['id']  # Remove ID from response
+            # Add default schedule if no data exists
+            time_slots = ['8:30 AM', '10:05 AM', '11:40 AM', '1:15 PM', '2:50 PM', '4:25 PM', '6:00 PM']
+            for day in ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday']:
+                for time_slot in time_slots:
+                    if time_slot not in teacher_schedule[day]:
+                        teacher_schedule[day][time_slot] = 'Available'
+            
+            teacher_dict['schedule'] = teacher_schedule
+            del teacher_dict['id']  # Remove ID from response
+            faculty_list.append(teacher_dict)
         
-        return jsonify([dict(row) for row in teachers])
+        return jsonify(faculty_list)
         
     except Exception as e:
         print(f"Database error: {str(e)}")
