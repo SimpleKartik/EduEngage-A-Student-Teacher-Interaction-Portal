@@ -3,84 +3,127 @@ import mysql.connector
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
 import json
+import os
+from dotenv import load_dotenv
+import logging
+
+# Load environment variables
+load_dotenv()
 
 app = Flask(__name__)
-app.secret_key = 'your_secret_key_here'  # Change this to a secure secret key
+app.secret_key = os.getenv('SECRET_KEY', 'your_secret_key_here_change_this_in_production')
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 def get_db_connection():
-    return mysql.connector.connect(
-        host='sql12.freemysqlhosting.net',
-        user='sql12752768',
-        password='III99fbDnZ',
-        database='sql12752768'
-    )
+    try:
+        connection = mysql.connector.connect(
+            host=os.getenv('DB_HOST', 'sql12.freemysqlhosting.net'),
+            user=os.getenv('DB_USER', 'sql12752768'),
+            password=os.getenv('DB_PASSWORD', 'III99fbDnZ'),
+            database=os.getenv('DB_NAME', 'sql12752768'),
+            autocommit=True,
+            connect_timeout=10,
+            use_unicode=True,
+            charset='utf8mb4'
+        )
+        return connection
+    except mysql.connector.Error as err:
+        logger.error(f"Database connection error: {err}")
+        raise
 
 @app.route('/login/teacher', methods=['POST'])
 def teacher_login():
-    data = request.json
-    username = data.get('username')
-    password = data.get('password')
-    
-    conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
-    
-    cursor.execute('SELECT * FROM teachers WHERE username = %s', (username,))
-    teacher = cursor.fetchone()
-    
-    if teacher and check_password_hash(teacher['password'], password):
-        session['user_id'] = teacher['id']
-        session['user_type'] = 'teacher'
-        return jsonify({'success': True, 'redirect': '/teacher_dashboard.html'})
-    
-    return jsonify({'success': False, 'message': 'Invalid credentials'})
+    try:
+        data = request.json
+        username = data.get('username')
+        password = data.get('password')
+        
+        if not username or not password:
+            return jsonify({'success': False, 'message': 'Please provide both username and password'})
+        
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+        
+        try:
+            cursor.execute('SELECT * FROM teachers WHERE username = %s', (username,))
+            teacher = cursor.fetchone()
+            
+            if teacher and check_password_hash(teacher['password'], password):
+                session['user_id'] = teacher['id']
+                session['user_type'] = 'teacher'
+                return jsonify({'success': True, 'redirect': '/teacher_dashboard.html'})
+            
+            return jsonify({'success': False, 'message': 'Invalid credentials'})
+            
+        except mysql.connector.Error as err:
+            logger.error(f"Database error in teacher login: {err}")
+            return jsonify({'success': False, 'message': 'Database error occurred. Please try again.'})
+        finally:
+            cursor.close()
+            conn.close()
+            
+    except Exception as e:
+        logger.error(f"Unexpected error in teacher login: {e}")
+        return jsonify({'success': False, 'message': 'An error occurred during login. Please try again.'})
 
 @app.route('/login/student', methods=['POST'])
 def student_login_submit():
-    data = request.json
-    username = data.get('username')
-    password = data.get('password')
-    
-    if not username or not password:
-        return jsonify({
-            'success': False,
-            'message': 'Please provide both username and password'
-        })
-    
-    conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
-    
     try:
-        cursor.execute(
-            'SELECT * FROM students WHERE username = %s',
-            (username,)
-        )
-        student = cursor.fetchone()
+        data = request.json
+        username = data.get('username')
+        password = data.get('password')
         
-        if student and check_password_hash(student['password'], password):
-            session['user_id'] = student['id']
-            session['user_type'] = 'student'
-            session['username'] = student['username']
-            
-            return jsonify({
-                'success': True,
-                'message': 'Login successful'
-            })
-        else:
+        if not username or not password:
             return jsonify({
                 'success': False,
-                'message': 'Invalid username or password'
+                'message': 'Please provide both username and password'
+            })
+        
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+        
+        try:
+            cursor.execute(
+                'SELECT * FROM students WHERE username = %s',
+                (username,)
+            )
+            student = cursor.fetchone()
+            
+            if student and check_password_hash(student['password'], password):
+                session['user_id'] = student['id']
+                session['user_type'] = 'student'
+                session['username'] = student['username']
+                
+                return jsonify({
+                    'success': True,
+                    'message': 'Login successful'
+                })
+            else:
+                return jsonify({
+                    'success': False,
+                    'message': 'Invalid username or password'
+                })
+                
+        except mysql.connector.Error as err:
+            logger.error(f"Database error in student login: {err}")
+            return jsonify({
+                'success': False,
+                'message': 'Database error occurred. Please try again.'
             })
             
+        finally:
+            cursor.close()
+            conn.close()
+            
     except Exception as e:
-        print(f"Database error: {str(e)}")
+        logger.error(f"Unexpected error in student login: {e}")
         return jsonify({
             'success': False,
-            'message': 'An error occurred during login'
+            'message': 'An error occurred during login. Please try again.'
         })
-        
-    finally:
-        cursor.close()
-        conn.close()
 
 @app.route('/update_cabin_status', methods=['POST'])
 def update_cabin_status():
@@ -926,5 +969,21 @@ def get_faculty_schedule():
         cursor.close()
         conn.close()
 
+@app.route('/health')
+def health_check():
+    """Health check endpoint for Render"""
+    try:
+        # Test database connection
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute("SELECT 1")
+        cursor.close()
+        conn.close()
+        return jsonify({'status': 'healthy', 'database': 'connected'}), 200
+    except Exception as e:
+        logger.error(f"Health check failed: {e}")
+        return jsonify({'status': 'unhealthy', 'error': str(e)}), 500
+
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000)
+    port = int(os.getenv('PORT', 5000))
+    app.run(host='0.0.0.0', port=port, debug=False)
